@@ -1,9 +1,10 @@
 [Unit]
 Description=SPRAXXX VPN portal (FastAPI)
-After=network.target wg-quick@wg0y.service
+After=network.target wg-quick@wg0.service
 
 [Service]
 WorkingDirectory=/opt/dcvpn
+EnvironmentFile=/opt/dcvpn/.env
 ExecStart=/usr/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000
 Restart=always
 User=root
