@@ -44,7 +44,7 @@ fi
 # Create nginx configuration
 echo "Setting up nginx configuration..."
 PUBLIC_ROOT=$(grep "^PUBLIC_ROOT=" "$DEPLOY_ROOT/.env" | cut -d'=' -f2 || echo "/var/www/wg/clients")
-sed "s|PUBLIC_ROOT|$PUBLIC_ROOT|g" nginx.conf > /etc/nginx/sites-available/dcvpn.conf
+sed "s|PUBLIC_ROOT|$PUBLIC_ROOT|g" "$DEPLOY_ROOT/nginx.conf" > /etc/nginx/sites-available/dcvpn.conf
 
 # Enable nginx site
 if [[ ! -L /etc/nginx/sites-enabled/dcvpn.conf ]]; then
