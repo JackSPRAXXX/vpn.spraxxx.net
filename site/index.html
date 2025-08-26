@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPRAXXX VPN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SPRAXXX VPN</h1>
+        <p>Secure your connection instantly. Generate your QR code below:</p>
+        
+        <button id="generateBtn" onclick="generateVPN()">Generate VPN Configuration</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function generateVPN() {
+            const button = document.getElementById('generateBtn');
+            const result = document.getElementById('result');
+            
+            // Show loading state
+            button.disabled = true;
+            button.textContent = 'Generating...';
+            result.innerHTML = '<p>Creating your VPN configuration...</p>';
+            
+            try {
+                const response = await fetch('/new', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const j = await response.json();
+                
+                // Display results as specified in the problem statement
+                result.innerHTML = `
+                    <div class="result-content">
+                        <h3>Your VPN Configuration is Ready!</h3>
+                        <p><strong>Client ID:</strong> ${j.client_id}</p>
+                        <p><strong>Assigned IP:</strong> ${j.ip}</p>
+                        <p><a href="${j.conf_url}" target="_blank" class="download-link">Download Config</a></p>
+                        <div class="qr-container">
+                            <p><strong>QR Code:</strong></p>
+                            <img src="${j.qr_url}" alt="QR Code" class="qr-code">
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error generating VPN:', error);
+                result.innerHTML = `
+                    <div class="error">
+                        <p>Error generating VPN configuration: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // Reset button
+                button.disabled = false;
+                button.textContent = 'Generate New Configuration';
+            }
+        }
+    </script>
+</body>
+</html>
