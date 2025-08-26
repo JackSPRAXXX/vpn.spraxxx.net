@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DCVPN — WireGuard portal</title>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 2rem; }
+    .card { max-width: 640px; margin: 0 auto; padding: 1.2rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    input[type=text] { width: 100%; padding: 0.5rem; margin: 0.5rem 0; border: 1px solid #d1d5db; border-radius: 4px; }
+    button { background: #111827; color: #fff; padding: 0.6rem 1rem; border: none; border-radius: 6px; cursor: pointer; }
+    .out { margin-top: 1rem; }
+    img.qr { max-width: 240px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>DCVPN — WireGuard client generator</h1>
+    <p>Enter a device name and admin token to generate a client configuration.</p>
+
+    <label for="name">Device name</label>
+    <input id="name" type="text" placeholder="e.g. alice-phone" maxlength="64" />
+
+    <label for="token">Admin token</label>
+    <input id="token" type="text" placeholder="Paste your admin token here" />
+
+    <div>
+      <button id="create">Create client</button>
+    </div>
+
+    <div class="out" id="out"></div>
+  </div>
+
+  <script>
+    async function create() {
+      const out = document.getElementById('out');
+      const name = document.getElementById('name').value.trim();
+      const token = document.getElementById('token').value.trim();
+      if (!name) { out.textContent = 'Enter a name'; return; }
+      if (!token) { out.textContent = 'Enter admin token'; return; }
+      out.textContent = 'Creating...';
+
+      try {
+        const res = await fetch('/new', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ name })
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          out.textContent = `Error ${res.status}: ${txt}`;
+          return;
+        }
+        const j = await res.json();
+        out.innerHTML = `
+          <div>Config: <a href="${j.conf_url}" target="_blank">download</a></div>
+          ${j.qr_url ? `<div><img class="qr" src="${j.qr_url}" alt="qr"/></div>` : ''}
+          <pre style="white-space:pre-wrap;margin-top:8px">${j.preview || ''}</pre>`;
+      } catch (e) {
+        out.textContent = 'Request failed: ' + e;
+      }
+    }
+    document.getElementById('create').addEventListener('click', create);
+  </script>
+</body>
+</html>
