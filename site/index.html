@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>SPRAXXX VPN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;max-width:680px;margin:40px auto;padding:0 16px;line-height:1.5}
+    code,pre{background:#f6f8fa;border-radius:6px;padding:2px 6px}
+    button{padding:10px 16px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+    .ok{background:#e7f7ee;border-color:#bde5ce}
+    .err{background:#fdeeee;border-color:#f5c2c7}
+  </style>
+</head>
+<body>
+  <h1>SPRAXXX VPN</h1>
+  <p>Generate a WireGuard profile and QR in one click.</p>
+
+  <h3>New client</h3>
+  <form id="f">
+    <label>Device name:&nbsp;<input id="name" placeholder="iphone, s23, laptop" required></label>
+    <button type="submit">Create</button>
+  </form>
+
+  <div id="out"></div>
+
+  <script>
+  const f=document.getElementById('f'), out=document.getElementById('out');
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    out.textContent='Working...';
+    const name=document.getElementById('name').value.trim();
+    try{
+      const r=await fetch('/new', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name})});
+      if(!r.ok){throw new Error(await r.text());}
+      const j=await r.json();
+      out.innerHTML = `
+        <div class="ok">
+          <p><b>Done!</b></p>
+          <p>Config: <a href="${j.conf_url}" target="_blank">${j.conf_url}</a></p>
+          <p>QR: <a href="${j.qr_url}" target="_blank">${j.qr_url}</a></p>
+          <p>On your phone, open WireGuard → "Add a tunnel" → "Scan from QR".</p>
+        </div>`;
+    }catch(err){
+      out.innerHTML = `<div class="err"><b>Error:</b> ${err}</div>`;
+    }
+  });
+  </script>
+</body>
+</html>
